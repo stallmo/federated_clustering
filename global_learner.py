@@ -1,14 +1,16 @@
 import numpy as np
 import copy
 
+
 class GlobalClusterer:
 
-    def __init__(self, local_learners, num_clusters, data_dim, max_rounds=1000, tol=0.0001):
+    def __init__(self, local_learners, num_clusters, data_dim, max_rounds=1000, tol=0.0001, weighing_function=None):
         self.__local_learners = local_learners
         self.__tol = tol
         self.__num_clusters = num_clusters
         self.__max_rounds = max_rounds
         self.__data_dim = data_dim
+        self.__weighing_function = weighing_function
 
         # going to be set when fit() is called
         self.__W = None  # clients cluster supports
@@ -56,11 +58,14 @@ class GlobalClusterer:
         :return: None.
         """
         # we will need to normalize the centers by their respective total support
+        local_center_supports = np.array(local_center_supports)
+        if not self.__weighing_function is None:
+            local_center_supports = self.__weighing_function(local_center_supports)
+
         support_normalizer = np.array(local_center_supports).sum(axis=0)
         new_centers = np.array(new_centers)
         # multiple each client's center with its support
-        weighted_new_centers = np.array(new_centers).reshape(-1, self.__data_dim) * np.array(
-            local_center_supports).reshape(-1, 1)
+        weighted_new_centers = np.array(new_centers).reshape(-1, self.__data_dim) * local_center_supports.reshape(-1, 1)
         # reshape to prepare for normalizing by total support
         weighted_new_centers = weighted_new_centers.reshape(-1, self.__num_clusters, self.__data_dim)
         # calculate new global centers
@@ -91,7 +96,7 @@ class GlobalClusterer:
                 local_center_supports.append(local_learner.get_center_support())
 
             # recalculate global cluster centers
-            prev_global_centers = copy.deepcopy(self.__global_centers) #  needed to check convergence
+            prev_global_centers = copy.deepcopy(self.__global_centers)  # needed to check convergence
             self.__update_global_centers(new_centers, local_center_supports)
 
             # check convergence
