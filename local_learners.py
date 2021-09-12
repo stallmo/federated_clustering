@@ -36,6 +36,8 @@ class FuzzyCMeansClient(FuzzyCMeans):
 
         return cluster_supports
 
+    
+
     def cluster_assignment(self):
         """
         Calls the predict() function on the local model to obtain fuzzy assignments.

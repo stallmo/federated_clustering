@@ -1,6 +1,8 @@
 import numpy as np
 import copy
 from sklearn.cluster import KMeans
+from scipy.spatial.distance import cdist
+
 
 class GlobalClusterer:
 
@@ -85,7 +87,20 @@ class GlobalClusterer:
 
         new_centers = np.array(new_centers).reshape(-1, self.__data_dim)
         kmeans_model.fit(new_centers)
-        self.__global_centers = kmeans_model.cluster_centers_
+
+        # TODO: Fix the following hack. This might fail in some cases, e.g., use own kmeans implementation to make the following obsolete
+
+        # we need to make sure we update the centers in correct order. the kmeans object does not necessarily always return the centers in the same order.
+        # therefore, always update the nearest center
+        if self.__iterations < 2:
+            # in the first iteration, the ordering is random. we fix it only after the first iteration was completed.
+            # otherwise, multiple points might be closest to the same center and the "else" made the whole algorithm fail.
+            indices_new_centers = range(self.__num_clusters)
+        else:
+            dist_mat = cdist(self.__global_centers, kmeans_model.cluster_centers_)
+            indices_new_centers = dist_mat.argmin(axis=1)
+
+        self.__global_centers = kmeans_model.cluster_centers_[indices_new_centers]
 
         pass
 
@@ -141,5 +156,4 @@ class GlobalClusterer:
                 for local_learner in self.__local_learners:
                     local_learner.set_centers(self.__global_centers)
                 break
-
         pass
