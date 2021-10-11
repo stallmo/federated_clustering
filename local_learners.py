@@ -70,6 +70,26 @@ class KMeansClient:
     def centers(self):
         return self.__cur_centers
 
+    @property
+    def client_data(self):
+        return self.__client_data
+
+    @property
+    def num_clusters(self):
+        return self.__num_clusters
+
+    @property
+    def iterations(self):
+        return self.__local_iters
+
+    @property
+    def tol(self):
+        return self.__tol
+
+    @property
+    def max_iter(self):
+        return self.__max_iter
+
     def set_centers(self, global_centers):
         """
         Method that re-initializes the local kmeans model with centers set to <global_centers>.
