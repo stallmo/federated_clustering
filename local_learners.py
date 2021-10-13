@@ -7,6 +7,7 @@ from cluster_library.fuzzy_cmeans import FuzzyCMeans
 
 import numpy as np
 from sklearn.cluster import KMeans
+from scipy.spatial.distance import cdist
 from sklearn.preprocessing import label_binarize
 
 
@@ -98,19 +99,20 @@ class KMeansClient:
         :return:
         """
         self.__cur_centers = global_centers
-        self.__kmeans_model = KMeans(n_clusters=self.__num_clusters,
-                                     init=global_centers,
-                                     max_iter=self.__max_iter,
-                                     tol=self.__tol,
-                                     precompute_distances='auto',
-                                     random_state=43,
-                                     n_jobs=None)
 
     def update_centers_locally(self):
         """
         Updates the cluster centers according to the local learner's local data.
         :return:
         """
+        self.__kmeans_model = KMeans(n_clusters=self.__num_clusters,
+                                     init=self.__cur_centers,
+                                     # this must have been updated by the global learner beforehand
+                                     max_iter=self.__max_iter,
+                                     tol=self.__tol,
+                                     precompute_distances='auto',
+                                     random_state=43,
+                                     n_jobs=None)
         self.__kmeans_model.fit(self.__client_data)
         self.__local_iters += self.__kmeans_model.n_iter_
         self.__cur_centers = self.__kmeans_model.cluster_centers_
@@ -121,7 +123,8 @@ class KMeansClient:
 
         :return: np.array of cluster assignments. Shape: (clients_data.shape[0], num_clusters).
         """
-        labels = self.__kmeans_model.predict(self.__client_data)
+        labels = cdist(self.__client_data, self.__cur_centers).argmin(axis=1)
+
         if self.__num_clusters == 2:
             labels = np.append(labels, 2)
 
