@@ -126,11 +126,12 @@ class KMeansClient:
         labels = cdist(self.__client_data, self.__cur_centers).argmin(axis=1)
 
         if self.__num_clusters == 2:
+            # add artificial label to force binarizer to create a 3d-matrix (otherwise it would create 1d). we will make it 2d again below.
             labels = np.append(labels, 2)
 
         assignment_matrix = label_binarize(labels, classes=sorted(list(set(labels))))
         if self.__num_clusters == 2:
-            assignment_matrix = assignment_matrix[0:-1, 0:-1]
+            assignment_matrix = assignment_matrix[0:-1, 0:-1] # remove artificial label again
 
         return assignment_matrix
 
