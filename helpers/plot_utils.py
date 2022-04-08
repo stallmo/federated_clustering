@@ -1,6 +1,7 @@
 from matplotlib import pyplot as plt
 import numpy as np
 
+
 def get_axes_lims(X):
     x_min = X[:, 0].min() - (X[:, 0].mean() * 0.5)
     x_max = X[:, 0].max() + (X[:, 0].mean() * 0.5)
@@ -18,9 +19,7 @@ def plot_data(X, labels=None, centers=None, title='Data plotted', savename=None)
     f, axes = plt.subplots(1, 1, figsize=(11, 5))
     axes.set_xlim(x_min, x_max)
     axes.set_ylim(y_min, y_max)
-    # axes[1].scatter(X[:,0], X[:,1], alpha=.1)
-    # axes[1].set_title('Input data')
-    # axes[0].scatter(X[:,0], X[:,1], c=labels, alpha=.1)
+
     if not labels is None:
         axes.scatter(X[:, 0], X[:, 1], c=labels, alpha=.4)
     else:
@@ -34,14 +33,15 @@ def plot_data(X, labels=None, centers=None, title='Data plotted', savename=None)
         plt.savefig(savename)
     plt.show()
 
-def plot_federated_clusters(global_learner, xlims, title='', savename=None):
 
+def plot_federated_clusters(global_learner, xlims, title='', savename=None):
     # plot result
     local_learners = global_learner.local_learners
 
     x_min, x_max, y_min, y_max = xlims
 
     f, axes = plt.subplots(len(local_learners), 1, figsize=(11, 5 * len(local_learners)))
+    f.tight_layout(h_pad=6)
 
     for i, local_learner in enumerate(local_learners):
         cluster_labels = np.argmax(local_learner.cluster_assignment(), axis=1)
