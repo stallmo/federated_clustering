@@ -124,7 +124,7 @@ class GlobalClusterer:
         """
         # global cluster initialization
         if self.__global_centers is None:
-            self.__global_centers = np.random.randint(low=-10, high=10, size=(self.__num_clusters, self.__data_dim))
+            self.__global_centers = np.random.rand(self.__num_clusters, self.__data_dim)
 
         # start federation rounds
         for _global_round in range(self.__max_rounds):
@@ -145,7 +145,9 @@ class GlobalClusterer:
             self.__update_global_centers(new_centers, local_center_supports)
 
             # check convergence
-            if np.linalg.norm(self.__global_centers - prev_global_centers) < self.__tol:
+            _moved_by = np.linalg.norm(self.__global_centers - prev_global_centers)
+
+            if _moved_by < self.__tol:
                 break
         # communicate final global centers
         for local_learner in self.__local_learners:
